@@ -49,20 +49,62 @@ describe('Test suite for the /users routes on our api', () => {
 
       // /users/:id update
 
-    test('it should update the user info', async () => {
-        const user = new User({name: 'Jeremy Casanova', email: 'casanova@gmail.com',password: "123456789"})
-        user.save()
-        const response = await request(app).put(`/users/${user._id}`).set('Authorization',`Bearer ${token}`).send({name: 'Jeremy Casanova', email: 'casanova@gmail.com'})
+    // test('it should update the user info', async () => {
+    //     const user = new User({name: 'Jeremy Casanova', email: 'casanova@gmail.com',password: "123456789"})
+    //     user.save()
+    //     const response = await request(app).put(`/users/${user._id}`).set('Authorization',`Bearer ${token}`).send({name: 'Jeremy Casanova', email: 'casanova@gmail.com'})
 
-        // expect(response.body.user.email).toEqual('casanova@gmail.com') // why there is no user 
-        expect(response.body.user.email).toEqual('casanova@gmail.com')
-        expect(response.body.user.name).toEqual('casanova@gmail.com')
-        expect(response.status).toBe(200)
-        // expect(response.body.user).toEqual({_id: "8888", email: 'casanova@gmail.com',password: "123456789"})
+    //     // expect(response.body.user.email).toEqual('casanova@gmail.com') // why there is no user 
+    //     expect(response.body.user.email).toEqual('casanova@gmail.com')
+    //     expect(response.body.user.name).toEqual('casanova@gmail.com')
+    //     expect(response.status).toBe(200)
+    //     // expect(response.body.user).toEqual({_id: "8888", email: 'casanova@gmail.com',password: "123456789"})
 
-    })
+    // })
 
-      // /users/:id delete 
+     // /users/login
+    test('It should login a user', async () => {
+        const user = new User({ name: 'John Doe', email: 'john.doe@example.com', password: 'password123' })
+        await user.save()
+    
+        const response = await request(app)
+          .post('/users/login')
+          .send({ email: 'john.doe@example.com', password: 'password123' })
+        
+        expect(response.statusCode).toBe(200)
+        expect(response.body.user.name).toEqual('John Doe')
+        expect(response.body.user.email).toEqual('john.doe@example.com')
+        expect(response.body).toHaveProperty('token')
+      })
+    // /users/:id update
+      test('It should update a user', async () => {
+        const user = new User({ name: 'John Doe', email: 'john.doe@example.com', password: 'password123' })
+        await user.save()
+        const token = await user.generateAuthToken()
+    
+        const response = await request(app)
+          .put(`/users/${user._id}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ name: 'Jane Doe', email: 'jane.doe@example.com' })
+        
+        expect(response.statusCode).toBe(200)
+        expect(response.body.name).toEqual('Jane Doe')
+        expect(response.body.email).toEqual('jane.doe@example.com')
+      })
+      // /user/:id delete
+      test('It should delete a user', async () => {
+        const user = new User({ name: 'John Doe', email: 'john.doe@example.com', password: 'password123' })
+        await user.save()
+        const token = await user.generateAuthToken()
+    
+        const response = await request(app)
+          .delete(`/users/${user._id}`)
+          .set('Authorization', `Bearer ${token}`)
+        
+        expect(response.statusCode).toBe(200)
+        expect(response.body.message).toEqual('User deleted')
+      })
+    
 
 
 })
